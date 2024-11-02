@@ -1,7 +1,7 @@
 const express = require('express')
-const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const { generateToken, verifyToken, generateRefreshToken } = require('../utils/jwt')
+const {saveRefreshToken} = require('../utils/authHelper')
 const { createUser, findUserByEmail } = require('../models/user')
 const router = express.Router()
 
@@ -24,8 +24,28 @@ router.post('/register', async (req, res) => {
 	}
 })
 
-router.post('login', (req, res) => {
-	res.send('Login User')
+router.post('/login', async (req, res) => {
+	const {email, password} = req.body
+
+	try {
+		const user = await findUserByEmail(email)
+
+		if(!user) {
+			return res.status(401).json({message: 'Invalid email or password'})
+		}
+
+		const isMatch = await bcrypt.compare(password, user.password)
+
+		if(!isMatch) return res.status(401).json({message: 'Invalid email or password'})
+
+		const accessToken = generateToken(user.id)
+		const refreshToken = generateRefreshToken(user.id);
+
+		await saveRefreshToken(user.id, refreshToken)
+		res.json({accessToken, refreshToken})
+	}catch(err) {
+		res.status(500).json({message: 'Internal server error'})
+	}
 })
 
 
