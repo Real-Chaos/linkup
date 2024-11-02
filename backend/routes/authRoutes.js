@@ -1,4 +1,5 @@
 const express = require('express')
+const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const { generateToken } = require('../utils/jwt')
 const { createUser } = require('../models/user')

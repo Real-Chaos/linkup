@@ -1,9 +1,12 @@
 const express = require('express')
 const app = express()
+require('dotenv').config()
 const pool = require('./config/db')
 const authRoutes = require('./routes/authRoutes')
 const userRoutes = require('./routes/userRoutes')
 const requestLogger = require('./middleware/requestLogger')
+const authenticateToken = require('./middleware/auth')
+
 
 
 
@@ -22,7 +25,7 @@ pool.query('SELECT NOW()', (err, res) => {
 
 // routes 
 app.use('/auth', authRoutes)
-app.use('/api', userRoutes)
+app.use('/user', authenticateToken, userRoutes)
 
 // initialize port
 

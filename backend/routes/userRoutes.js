@@ -1,8 +1,10 @@
 const express = require('express')
 const router = express.Router()
 
-router.get('/users', (req, res) => {
-  res.send('Get Users')
+router.get('/profile', (req, res) => {
+  res.json({message: `Welcome, user ${req.user}`})
 })
+
+
 
 module.exports = router
