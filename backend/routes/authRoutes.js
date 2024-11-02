@@ -1,16 +1,26 @@
 const express = require('express')
+const bcrypt = require('bcryptjs')
+const { generateToken } = require('../utils/jwt')
+const { createUser } = require('../models/user')
 const router = express.Router()
 
-router.post("/register", (req, res) => {
-  const {username, email, password} = req.body
+router.post('/register', async (req, res) => {
+	const { username, email, password } = req.body
+	try {
+		const hashedPassword = await bcrypt.hash(password, 10)
 
-  console.log(`Recieved Data:`, {username, email, password})
+		const newUser = await createUser(username, email, hashedPassword)
 
-  res.status(200).send('Registration data recieved')
+		// save user to the database
+		const token = generateToken(newUser.id)
+		res.json({ token })
+	} catch (err) {
+		res.status(500).json({ message: 'Error registering User!' })
+	}
 })
 
 router.post('login', (req, res) => {
-  res.send("Login User")
+	res.send('Login User')
 })
 
 module.exports = router

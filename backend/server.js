@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const pool = require('./db')
+const pool = require('./config/db')
 const authRoutes = require('./routes/authRoutes')
 const userRoutes = require('./routes/userRoutes')
 const requestLogger = require('./middleware/requestLogger')
