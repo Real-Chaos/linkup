@@ -3,7 +3,11 @@ const app = express()
 const pool = require('./db')
 const authRoutes = require('./routes/authRoutes')
 const userRoutes = require('./routes/userRoutes')
+const requestLogger = require('./middleware/requestLogger')
 
+
+
+app.use(requestLogger)
 
 // parse json
 app.use(express.json())
@@ -14,6 +18,7 @@ pool.query('SELECT NOW()', (err, res) => {
   if(err) console.error('Database connection error: ', err.stack)
   else console.log('Database connected at: ', res.rows[0].now)
 })
+
 
 // routes 
 app.use('/auth', authRoutes)
