@@ -2,8 +2,7 @@
 const {verifyToken} = require('../utils/jwt')
 
 const authenticateToken =  (req, res, next) => {
-	const authHeader = req.headers['authorization']; // Get the Authorization header
-  const token = authHeader && authHeader.split(' ')[1]; // Split and get the token part
+	const token = req.headers['authorization']; // Get the Authorization header
 	if (!token) return res.status(401).json({ message: 'Access Denied! No token provided' })
 
 	try {

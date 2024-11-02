@@ -12,7 +12,12 @@ const generateToken = (userId) => {
 // verify a token
 
 const verifyToken = (token) => {
+	token = token.split(' ')[1]; // Split and get the token part
 	return jwt.verify(token, process.env.JWT_SECRET)
 }
 
-module.exports = { generateToken, verifyToken }
+const generateRefreshToken = userId => {
+	return jwt.sign({id: userId}, process.env.JWT_SECRET, {expiresIn: '7d'})
+}
+
+module.exports = { generateToken, generateRefreshToken, verifyToken }
