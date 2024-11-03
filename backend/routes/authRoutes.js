@@ -30,43 +30,41 @@ router.post('/login', async (req, res) => {
 	try {
 		const user = await findUserByEmail(email)
 
-		if(!user) {
-			return res.status(401).json({message: 'Invalid email or password'})
+		if(user && await bcrypt.compare(password, user.password)) {
+			const accessToken = generateToken(user.id)
+			const refreshToken = generateRefreshToken(user.id)
+
+			await saveRefreshToken(user.id, refreshToken)
+			return res.json({accessToken, refreshToken})
 		}
+		return res.status(401).json({ message: 'Invalid credentials' });
 
-		const isMatch = await bcrypt.compare(password, user.password)
-
-		if(!isMatch) return res.status(401).json({message: 'Invalid email or password'})
-
-		const accessToken = generateToken(user.id)
-		const refreshToken = generateRefreshToken(user.id);
-
-		await saveRefreshToken(user.id, refreshToken)
-		res.json({accessToken, refreshToken})
 	}catch(err) {
 		res.status(500).json({message: 'Internal server error'})
 	}
 })
 
 
-// router.post('/refresh-token', async(req, res) => {
-// 	const {refreshToken } = req.body
-// 	if (!refreshToken) return res.status(401).json({ message: 'Refresh token required.' });
+router.post('/refresh-token', async(req, res) => {
+	const {token} = req.body
 
-// 	try {
-//     const decoded = verifyToken(refreshToken);
-//     const user = await findUserById(decoded.id); // retrieve user data based on user ID
+	if(!token) {
+		return res.status(403).json({ message: 'Refresh token required' });
+	}
 
-//     if (!user) {
-//       return res.status(403).json({ message: 'User not found.' });
-//     }
+	try {
+		const decoded = verifyToken(token, process.env.JWT_SECRET)
+		const storedToken = await pool.query(
+			'SELECT * FROM refresh_tokens WHERE token = $1 AND user_id = $2',
+			[token, decoded.id]
+		)
+		if (storedToken.rows.length === 0) return res.status(403).json({message:  'Invalid Refresh Token'})
 
-//     // Generate a new access token
-//     const newAccessToken = generateToken(user.id);
-//     res.json({ accessToken: newAccessToken });
-//   } catch (error) {
-//     return res.status(403).json({ message: 'Invalid or expired refresh token.' });
-//   }
-// })
+		const newAccessToken = generateToken(decoded.id)
+		return res.json({accessToken: newAccessToken})
+	} catch (error) {
+    return res.status(403).json({ message: 'Invalid or expired refresh token' });
+  }
+})
 
 module.exports = router
