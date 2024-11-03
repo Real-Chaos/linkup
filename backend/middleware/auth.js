@@ -6,9 +6,8 @@ const authenticateToken =  (req, res, next) => {
 	if (!token) return res.status(401).json({ message: 'Access Denied! No token provided' })
 
 	try {
-    console.log('decoding')
+
     const decoded = verifyToken(token)
-    console.log(decoded)
     req.user = decoded
     next()
 	} catch (err) {
